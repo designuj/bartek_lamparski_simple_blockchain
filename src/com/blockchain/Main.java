@@ -1,29 +1,31 @@
 package com.blockchain;
 
 import com.google.gson.GsonBuilder;
+
+import java.security.Security;
 import java.util.ArrayList;
 
 public class Main {
     public static ArrayList<Block> blockchain = new ArrayList<>();
-    public static int difficulty = 2;
+    public static int difficulty = 5;
+    public static Wallet walletA;
+    public static Wallet walletB;
 
     public static void main(String[] args) {
-        blockchain.add(new Block("lorem ipsum", "0"));
-        System.out.println("Try to mine block 1...");
-        blockchain.get(0).mineBlock(difficulty);
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
-        blockchain.add(new Block("lorem ipsum", blockchain.get(blockchain.size()-1).hash));
-        System.out.println("Try to mine block 2...");
-        blockchain.get(1).mineBlock(difficulty);
+        walletA = new Wallet();
+        walletB = new Wallet();
 
-        blockchain.add(new Block("lorem ipsum", blockchain.get(blockchain.size()-1).hash));
-        System.out.println("Try to mine block 3...");
-        blockchain.get(2).mineBlock(difficulty);
+        System.out.println("Private and public keys:");
+        System.out.println(StringUtil.getStringFromKey(walletA.privateKey));
+        System.out.println(StringUtil.getStringFromKey(walletA.publicKey));
 
-        System.out.println("Is blockchain valid: " + isChainValid());
-        String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-        System.out.println("Blockchain:");
-        System.out.println(blockchainJson);
+        Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, 5, null);
+        transaction.generateSignature(walletA.privateKey);
+
+        System.out.println("Is signature verified");
+        System.out.println(transaction.verifySignature());
     }
 
     public static Boolean isChainValid() {
